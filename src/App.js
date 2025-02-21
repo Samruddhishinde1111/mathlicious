@@ -12,6 +12,7 @@ const wrongSound = new Audio("/sounds/wrong-47985.mp3");
 const timeoutSound = new Audio("/sounds/timeout-90320.mp3");
 
 function App() {
+  const [userName, setUserName] = useState(""); // Added state for user's name
   const [num1, setNum1] = useState(0);
   const [num2, setNum2] = useState(0);
   const [operator, setOperator] = useState("+");
@@ -39,7 +40,7 @@ function App() {
       setGameStarted(false);
       setScores((prevScores) => [
         ...prevScores.slice(-2),
-        { key: Date.now(), game: `Game ${prevScores.length + 1}`, score },
+        { key: Date.now(), user: userName, game: `Game ${prevScores.length + 1}`, score },
       ]);
       return;
     }
@@ -93,11 +94,11 @@ function App() {
       setScore(score + 1);
       setFeedback("Correct! 🎉");
       message.success("Correct Answer!");
-      correctSound.play(); // Play correct answer sound
+      correctSound.play();
     } else {
-      setFeedback(`Incorrect. The correct answer is ${correctAnswer}.`);
-      message.error("Wrong Answer!");
-      wrongSound.play(); // Play wrong answer sound
+      setFeedback(`Incorrect ❌. The correct answer is ${correctAnswer}.`);
+      message.error("Wrong Answer! ");
+      wrongSound.play();
     }
 
     setTimeout(() => {
@@ -106,9 +107,9 @@ function App() {
   };
 
   const handleTimeOut = () => {
-    setFeedback("Time's up! Moving to the next question.");
-    message.warning("Time's up!");
-    timeoutSound.play(); // Play timeout sound
+    setFeedback("Time's up ⏳! Moving to the next question.");
+    message.warning("Time's up! ");
+    timeoutSound.play();
 
     setTimeout(() => {
       generateProblem();
@@ -116,6 +117,11 @@ function App() {
   };
 
   const handleDifficultySelect = (level) => {
+    if (!userName.trim()) {
+      message.warning("Please enter your name before starting!");
+      return;
+    }
+
     setDifficulty(level);
     setGameStarted(true);
     setQuestionCount(0);
@@ -143,6 +149,14 @@ function App() {
           {!gameStarted ? (
             <>
               <Title level={1}>Welcome to Mathlicious</Title>
+              <Input
+                size="large"
+                placeholder="Enter your name"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                style={{ marginBottom: "10px", width: "50%", textAlign: "center" }}
+              />
+
               <Title level={3}>Select Your Level</Title>
 
               <div className="button-group">
@@ -164,7 +178,9 @@ function App() {
           ) : (
             <>
               <Title level={1}>Math Game</Title>
-              <Title level={2}>Time Left: {timeLeft}s</Title>
+              <Title level={2}>Player: {userName}</Title>
+              <Title level={2}>⏳ Time Left: {timeLeft}s</Title>
+
               <Title level={2}>Question {questionCount} / 5</Title>
               <Title level={2}>
                 {num1} {operator} {num2} = ?
@@ -190,6 +206,7 @@ function App() {
 
           <Table
             columns={[
+              { title: "Player", dataIndex: "user", key: "user" },
               { title: "Game", dataIndex: "game", key: "game" },
               { title: "Score", dataIndex: "score", key: "score" },
             ]}
